@@ -8,7 +8,7 @@ public class Smith extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 	public String name() {
 		return "Smith";
 	}
-
+//HALLO KAROL
 
 	@Override
 	public void init(Board board, boolean playerOne) {
