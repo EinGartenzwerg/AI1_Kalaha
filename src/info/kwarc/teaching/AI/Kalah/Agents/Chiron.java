@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Queue;
 
-
 import java.util.LinkedList;
 
 public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
@@ -50,7 +49,8 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 		// ref to board => update
 		private Board				board;
 		// Value of Max, Min wins or a draw
-		private final static int	max_V	= 100, min_V = -100, draw_V = 0;
+		private final static int	MAX_V	= 100, MIN_V = -100, DRAW_V = 0;
+		private final static int	UNUSED	= 42_666;
 
 		// Konstruktor
 		private MyBoard (Board board) {
@@ -75,7 +75,7 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 
 		private State getState() {
 			State max_plays_this = new State(this);
-			max_plays_this.player_max = true; 
+			max_plays_this.player_max = true;
 			return max_plays_this;
 		}
 
@@ -83,7 +83,7 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 		private int search() {
 			int re = 0;
 			for (int i = 0; i < 15; i++) { // iterativ deepening //TODO: change 15 to a timeout based search
-				re = deaper(getState(), i)[0];
+				re = deaper(getState(), i, UNUSED, UNUSED)[0];
 			}
 			return re;
 		}
@@ -95,12 +95,14 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 		// TODO: endrekusiviere
 		// TODO: Queue in header needed ?
 		// TODO: player_max needed ? => its in my State ....
-		private int[] deaper(State next, int depth) {
-			int[] re = new int[3]; // TODO: init => alpha and beta need to have set to a not possible Value ( \notin
-									// [min_V,maxV])
-			if (next == null) { // should never happen
+		private int[] deaper(State next, int depth, int alpha, int beta) {
+			if (next == null) { // should never happen //TODO: check wether it will never happen
 				return null;
-			} else if (depth == 0) {
+			}
+			int[] re = new int[3]; // TODO: init => alpha and beta need to have set to a not possible Value ( \notin
+			re[1] = re[2] = UNUSED; // [min_V,maxV])
+			re[0] = next.player_max ? MIN_V : MAX_V;
+			if (depth == 0) {
 				re[0] = next.eval();
 				return re;
 			}
@@ -109,14 +111,36 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 
 			// TODO: remember the best way and how to get there
 			while (next_child != null) {
-				int[] result = deaper(next_child, depth - 1);
+				int[] result = deaper(next_child, depth - 1, alpha, beta);
 				next_child = children.poll();
-				
-				if (result != null && chooseNew(re[0], result[0], next.player_max)) re = result;
+				//
+
+				// if (result != null && chooseNew(re[0], result[0], next.player_max)) {
+				// re = result;
+				// }
+				if (result != null) { //TODO remove ASAP => deaper should never return null;
+					if (next.player_max) { // I am Max
+						if (re[0] < result[0]) {
+							re = result;
+						}
+						if (re[0] > beta) { // TODO: beta
+							return re;
+						} else {
+							beta = re[0];
+						}
+					} else { // I am Min
+						if (result[0] < re[0]) {
+							re = result;
+						}
+						if (re[0] < alpha) { // TODO: alpha
+							return re;
+						}
+					}
+				}
 
 			}
 			// laut compiler deadCode // TODO double check it
-			//if (re == null) return null; // sollte nicht eintretten :S
+			// if (re == null) return null; // sollte nicht eintretten :S
 
 			return re;
 		}
