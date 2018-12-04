@@ -2,16 +2,21 @@ package info.kwarc.teaching.AI.Kalah.Agents;
 
 import info.kwarc.teaching.AI.Kalah.Board;
 import info.kwarc.teaching.AI.Kalah.util.Converter;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Queue;
+
+
+import java.util.LinkedList;
 
 public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
-	Board	b;
-	MyBoard	mb;
+	private Board	b;
+	private MyBoard	mb;
 
 	@Override
 	public String name() {
-		return "Smith";
+		return "Chiron";
 	}
 
 	@Override
@@ -24,8 +29,8 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 
 	@Override
 	public int move() {
-		// TODO Auto-generated method stub
-		return 0;
+		mb.update();
+		return mb.search();
 	}
 
 	@Override
@@ -38,10 +43,14 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 		// max = upper half ? // TODO
 		// min = under half
 		// store => .length - 1
-		private short[]	max;
-		private short[]	min;
+		private int[]				max;									// int is faster then short in most cases
+																			// .... fuck cpu nativ stuff
+		private int[]				min;									// => short is slower on x86 -- I expect to
+																			// play on an modern cpu ^^"
 		// ref to board => update
-		private Board	board;
+		private Board				board;
+		// Value of Max, Min wins or a draw
+		private final static int	max_V	= 100, min_V = -100, draw_V = 0;
 
 		// Konstruktor
 		private MyBoard (Board board) {
@@ -56,27 +65,78 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 			in_max.add(Converter.getMyStoreSeeds(board, true));
 			in_min.add(Converter.getMyStoreSeeds(board, false));
 			int n = in_max.size();
-			max = new short[n];
-			min = new short[n];
+			max = new int[n];
+			min = new int[n];
 			for (int i = 0; i < n; i++) {
-				max[i] = in_max.get(i).shortValue();
-				min[i] = in_min.get(i).shortValue();
+				max[i] = in_max.get(i).intValue();
+				min[i] = in_min.get(i).intValue();
 			}
 		}
 
 		private State getState() {
-			return new State(this);
+			State max_plays_this = new State(this);
+			max_plays_this.player_max = true; 
+			return max_plays_this;
 		}
 
-		// T
+		// start iterativ depenig
+		private int search() {
+			int re = 0;
+			for (int i = 0; i < 15; i++) { // iterativ deepening //TODO: change 15 to a timeout based search
+				re = deaper(getState(), i)[0];
+			}
+			return re;
+		}
+
+		// recusiv deepening
+		// int[0] value of the best move
+		// TODO: parallelisieren
+		// TODO: upgrade to alpha beta saerch => use int[] with idex alpha == 1 and beta == 2
+		// TODO: endrekusiviere
+		// TODO: Queue in header needed ?
+		// TODO: player_max needed ? => its in my State ....
+		private int[] deaper(State next, int depth) {
+			int[] re = new int[3]; // TODO: init => alpha and beta need to have set to a not possible Value ( \notin
+									// [min_V,maxV])
+			if (next == null) { // should never happen
+				return null;
+			} else if (depth == 0) {
+				re[0] = next.eval();
+				return re;
+			}
+			Queue<State> children = next.getExtensions();
+			State next_child = children.poll();
+
+			// TODO: remember the best way and how to get there
+			while (next_child != null) {
+				int[] result = deaper(next_child, depth - 1);
+				next_child = children.poll();
+				
+				if (result != null && chooseNew(re[0], result[0], next.player_max)) re = result;
+
+			}
+			// laut compiler deadCode // TODO double check it
+			//if (re == null) return null; // sollte nicht eintretten :S
+
+			return re;
+		}
+
+		private boolean chooseNew(int alt, int neu, boolean player_max) {
+			if (player_max) {
+				return alt < neu;
+			} else {
+				return neu < alt;
+			}
+		}
+
 	}
 
 	private class State {
-		private short[]	max;
-		private short[]	min;
-		// turn == true => its max's turn
-		// turn == false => its mins turn
-		private boolean	turn;
+		private int[]	max;
+		private int[]	min;
+		// player_max == true => its max's turn
+		// player_max == false => its mins turn
+		private boolean	player_max;
 		private int		len;
 
 		private State (MyBoard b) {
@@ -94,10 +154,18 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 		/*
 		 * TODO:
 		 * eval => heuristik
-		 * eval => iterativeDeepening.
-		 * 
+		 * look up Board.max_V .min_V draw_V
 		 */
+		private int eval() {
+			return 42;
+		}
 
+		// TODO: build it
+		// TODO: make it a PrioQueue => we need a fast and easy eval for this (faster then the one for our leaves)
+		private Queue<State> getExtensions() {
+			Queue<State> children = new LinkedList<State>();
+			return children;
+		}
 		/*
 		 * TODO: remember
 		 * Alles sich zu merken, was einmal berechnet wurde, ist ein zu großer Overhead.
