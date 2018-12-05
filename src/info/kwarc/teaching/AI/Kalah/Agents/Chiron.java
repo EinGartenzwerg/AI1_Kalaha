@@ -211,7 +211,7 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 
         //zur Kalibrierung der Heuristik
         int maxHeu = 1000;
-        int minHeu = -maxHeu;
+        int minHeu = -maxHeu; 
 
         /*
          * TODO: eval => heuristik look up Board.max_V .min_V draw_V
