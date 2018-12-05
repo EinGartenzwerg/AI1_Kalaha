@@ -10,8 +10,8 @@ import java.util.Queue;
 import java.util.LinkedList;
 
 public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
-	private Board	b;
-	private MyBoard	mb;
+	private Board b;
+	private MyBoard mb;
 
 	public Chiron () {
 	}
@@ -48,18 +48,19 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 		// max = upper half ? // TODO
 		// min = under half
 		// store => .length - 1
-		private int[]				max;									// int is faster then short in most cases
-																			// .... fuck cpu nativ stuff
-		private int[]				min;									// => short is slower on x86 -- I expect to
-																			// play on an modern cpu ^^"
+		private int[] max; // int is faster then short in most cases
+							// .... fuck cpu nativ stuff
+		private int[] min; // => short is slower on x86 -- I expect to
+							// play on an modern cpu ^^"
 		// ref to board => update
-		private Board				board;
+		private Board board;
+
 		// Value of Max, Min wins or a draw
-		private final static int	MAX_V	= 100, MIN_V = -100, DRAW_V = 0;
-		private final static int	UNUSED	= 42_666;
+		private final static int MAX_V = 10000, MIN_V = -10000, DRAW_V = 0;
+		private final static int UNUSED = 42_666;
 
 		// Konstruktor
-		private MyBoard (Board board) {
+		private MyBoard(Board board) {
 			this.board = board;
 			update();
 		}
@@ -97,7 +98,8 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 		// recusiv deepening
 		// int[0] value of the best move
 		// TODO: parallelisieren
-		// TODO: upgrade to alpha beta saerch => use int[] with idex alpha == 1 and beta == 2
+		// TODO: upgrade to alpha beta saerch => use int[] with idex alpha == 1 and beta
+		// == 2
 		// TODO: endrekusiviere
 		// TODO: Queue in header needed ?
 		// TODO: player_max needed ? => its in my State ....
@@ -105,7 +107,8 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 			if (next == null) { // should never happen //TODO: check wether it will never happen
 				return null;
 			}
-			int[] re = new int[3]; // TODO: init => alpha and beta need to have set to a not possible Value ( \notin
+			int[] re = new int[3]; // TODO: init => alpha and beta need to have set to a not possible Value (
+									// \notin
 			re[1] = re[2] = UNUSED; // [min_V,maxV])
 			re[0] = next.player_max ? MIN_V : MAX_V;
 			if (depth == 0) {
@@ -162,54 +165,82 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 	}
 
 	private class State {
-		private int[]	max;
-		private int[]	min;
+		private int[] max;
+		private int[] min;
+		
 		// player_max == true => its max's turn
 		// player_max == false => its mins turn
-		private boolean	player_max;
-		private int		len;
+		private boolean player_max;
+		private int len;
 
-		private State (MyBoard b) {
+		private State(MyBoard b) {
 			len = b.max.length;
 			max = Arrays.copyOf(b.max, len);
 			min = Arrays.copyOf(b.min, len);
 		}
 
-		private State (State s) {
+		private State(State s) {
 			len = s.max.length;
 			max = Arrays.copyOf(s.max, len);
 			min = Arrays.copyOf(s.min, len);
 		}
 
 		/*
-		 * TODO:
-		 * eval => heuristik
-		 * look up Board.max_V .min_V draw_V
+		 * TODO: eval => heuristik look up Board.max_V .min_V draw_V
 		 */
 		private int eval() {
-			return 42;
+			int[] weights = {2,2,4,10,4,6,0};
+			return weights[0]*h0() + weights[1]*h1() + weights[2]*h2() + weights[3]*h3() + weights[4]*h4() + weights[5]*h5() + weights[6]*h6();
+		}
+
+		private int h0() { 
+			return 1;
+		}
+
+		private int h1() {
+			return 0;
+		}
+
+		private int h2() {
+			return 0;
+		}
+
+		private int h3() {
+			return 0;
+		}
+
+		private int h4() {
+			return 0;
+		}
+
+		private int h5() {
+			return 0;
+		}
+
+		private int h6() {
+			return 0;
 		}
 
 		// TODO: build it
-		// TODO: make it a PrioQueue => we need a fast and easy eval for this (faster then the one for our leaves)
+		// TODO: make it a PrioQueue => we need a fast and easy eval for this (faster
+		// then the one for our leaves)
 		private Queue<State> getExtensions() {
 			Queue<State> children = new LinkedList<State>();
 			return children;
 		}
 		/*
-		 * TODO: remember
-		 * Alles sich zu merken, was einmal berechnet wurde, ist ein zu großer Overhead.
-		 * Angenommen wir haben den fertig berechneten Baum und haben die jeweiligen Alpha (und Beta) werte für jeden
-		 * Knoten
-		 * => Merke dir zunächst 2 Ebenen Tief ausgehend vom Startknoten
-		 * => Suche dir deinen besten aufgrund Berechnungen aus
-		 * => merke die die Erweiterungen von jenem
-		 * => warte auf den Zug des Gegners.
-		 * => Matche was Gegner getan hat => Suche kann nun begonnen werden mit Alpha vorgerechnet
-		 * => Mehr Teilbäume abschneiden da sie nicht schlechter als mein altes ergebnis sind
-		 * (in der Regel variert die Güte eines Knoten nicht allzustark von dem seinem Teilbaum
-		 * => altes Alpha ist relativ gut als untere Schranke für die neue Suche).
-		 * => Dies kann wahrscheinlich in wenigen Situationen problematisch werden, falls heuristik schlecht ist ^^"
+		 * TODO: remember Alles sich zu merken, was einmal berechnet wurde, ist ein zu
+		 * großer Overhead. Angenommen wir haben den fertig berechneten Baum und haben
+		 * die jeweiligen Alpha (und Beta) werte für jeden Knoten => Merke dir
+		 * zunächst 2 Ebenen Tief ausgehend vom Startknoten => Suche dir deinen besten
+		 * aufgrund Berechnungen aus => merke die die Erweiterungen von jenem => warte
+		 * auf den Zug des Gegners. => Matche was Gegner getan hat => Suche kann nun
+		 * begonnen werden mit Alpha vorgerechnet => Mehr Teilbäume abschneiden da sie
+		 * nicht schlechter als mein altes ergebnis sind (in der Regel variert die Güte
+		 * eines Knoten nicht allzustark von dem seinem Teilbaum => altes Alpha ist
+		 * relativ gut als untere Schranke für die neue Suche). => Dies kann
+		 * wahrscheinlich in wenigen Situationen problematisch werden, falls heuristik
+		 * schlecht ist ^^"
 		 * 
 		 */
 	}
