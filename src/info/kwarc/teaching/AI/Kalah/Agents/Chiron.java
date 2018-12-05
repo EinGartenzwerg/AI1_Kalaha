@@ -13,6 +13,9 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 	private Board	b;
 	private MyBoard	mb;
 
+	public Chiron () {
+	}
+
 	@Override
 	public String name() {
 		return "Chiron";
@@ -28,8 +31,11 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 
 	@Override
 	public int move() {
-		mb.update();
-		return mb.search();
+		// mb.update();
+		// return mb.search(); //TODO: revert
+		// TODO: do not forget to transfer bla into usefull    possible moves are
+		// 1,2,3,..... (it does not start with index 0  -.- ) 
+		return 1;
 	}
 
 	@Override
@@ -118,7 +124,7 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 				// if (result != null && chooseNew(re[0], result[0], next.player_max)) {
 				// re = result;
 				// }
-				if (result != null) { //TODO remove ASAP => deaper should never return null;
+				if (result != null) { // TODO remove ASAP => deaper should never return null;
 					if (next.player_max) { // I am Max
 						if (re[0] < result[0]) {
 							re = result;
