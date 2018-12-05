@@ -221,7 +221,7 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 			return 0;
 		}
 
-		// TODO: build it
+		// TODO: build it 
 		// TODO: make it a PrioQueue => we need a fast and easy eval for this (faster
 		// then the one for our leaves)
 		private Queue<State> getExtensions() {
