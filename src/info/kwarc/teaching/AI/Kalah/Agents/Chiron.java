@@ -79,19 +79,22 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 				max[i] = in_max.get(i).intValue();
 				min[i] = in_min.get(i).intValue();
 			}
+			System.out.println("My Turn - starting on ");
+			getState().print();
+			System.out.println();
 		}
 
 		private State getState() {
 			State max_plays_this = new State(this);
-			max_plays_this.player_max = true;
+			max_plays_this.player_max = false;
 			return max_plays_this;
 		}
 
 		// start iterativ depenig
 		private int search() {
 			int re = 0;
-			for (int i = 0; i < 15; i++) { // iterativ deepening //TODO: change 15 to a timeout based search
-				re = deaper(getState(), i, UNUSED, UNUSED)[0];
+			for (int i = 0; i < 1; i++) { // iterativ deepening //TODO: change 15 to a timeout based search
+				re = deaper(getState(), 5, UNUSED, UNUSED)[0]; // TODO: tiefe sollte i werden
 			}
 			return re + 1; // +1 da scala mit 1 startet anstatt mit 0 -.-
 		}
@@ -123,8 +126,6 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 			while (next_child != null) {
 				int[] result = deaper(next_child, depth - 1, alpha, beta);
 				next_child = children.poll();
-				//
-
 				// if (result != null && chooseNew(re[0], result[0], next.player_max)) {
 				// re = result;
 				// }
@@ -259,14 +260,19 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 			} else {
 				player = this.min;
 			}
-
+			// System.out.println("====================GET ===================");
+			// System.out.println();
+			// print();
+			// System.out.println();
 			Queue<State> children = new LinkedList<State>();
 			for (int i = 0; i < len - 1; i++) {
 				if (player[i] != 0) {
 					children.addAll(move(i));
 				}
 			}
+			// System.out.println("====================End ===================");
 			return children;
+
 		}
 
 		// Makes a move and returns the resulting State
@@ -287,18 +293,25 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 			// =====================================================================================
 			// Karols Vorschlag
 			// take all stones and place them
-			int curStones = max[house];
+			int curStones = player[house];
+			player[house] = 0;
 			int index = house;
 			final int indexEnemyStore = 2 * len - 1; // TODO: double check
-
 			while (curStones > 0) {
-				if (index == indexEnemyStore) { // skip enemy
-					index = 0; // equals to index = ( index +1 ) % 2*len
-					continue; // TODO: solve it without continue
-				}
+				// index++; // I start at my original house => first calc new then place
+
+				/*
+				 * if (index == indexEnemyStore) { // skip enemy
+				 * System.out.println("HEAASDASD ");
+				 * index = 0; // equals to
+				 * continue; // TODO: solve it without continue
+				 * }
+				 */
+				// System.out.println(" " + curStones + " " + index + " " + (index % len) + " " + len + " " +
+				// indexEnemyStore);
+				index = (index + 1) % (2 * len - 1);
 				// else place a stone into next field
 				curStones--; //
-				index++; // I start at my original house => first calc new then place
 				// now actually place it
 				if (index < len) {
 					player[index]++;
@@ -306,7 +319,7 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 					enemy[index % len]++;
 				}
 			}
-			if (index < len) {
+			if (index < -1) {// (index <len) {
 				/*
 				 * I ended up on my side => Therefore there are 2 special cases
 				 * 
@@ -314,8 +327,12 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 				 * b) Am I next due to ending up in
 				 */
 				if (index == len - 1) { // b) => I am at my store
+					// System.out.println("Moved i: " + index + " And i get to play again");
+					//newState.print();
+					// System.out.println("---------------------->");
 					return newState.getExtensions();
 				} else if (player[index] == 1) {// a)
+					System.out.println("Wierd suff ?");
 					// code reused
 					int enemyStones = enemy[enemy.length - 2 - index];
 					enemy[enemy.length - 2 - index] = 0;
@@ -327,6 +344,19 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 			newState.player_max = !this.player_max;
 			move.add(newState);
 			return move;
+
+			/*
+			 * State false
+			 * Max:[0, 5, 0, 2]
+			 * Min:[0, 5, 5, 1]
+			 * 
+			 * State true
+			 * Max:[1, 6, 1, 2]
+			 * Min:[0, 0, 6, 2]
+			 * State true
+			 * Max:[1, 6, 1, 3]
+			 * Min:[0, 5, 0, 2]
+			 */
 			// Karols Vorschlag ENDE
 			// =====================================================================================
 
@@ -401,5 +431,31 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 		 * wenigen Situationen problematisch werden, falls heuristik schlecht ist ^^"
 		 *
 		 */
+
+		private void print() {
+			System.out.println("State " + player_max);
+			System.out.println("Max:" + Arrays.toString(max));
+			System.out.println("Min:" + Arrays.toString(min));
+		}
+	}
+
+	public static void main(String[] args) {
+
+	}
+
+	private void test_getExtensions_skip_enemyStore() {
+		System.out.println("====================Test ===================");
+		State a = new State(mb);
+		int[] ma = { 0, 5, 0, 2 };
+		int[] mi = { 0, 5, 5, 1 };
+		a.max = ma;
+		a.min = mi;
+		a.player_max = false;
+		a.print();
+		System.out.println();
+		for (State s : a.move(2)) {
+			s.print();
+		}
+		System.out.println("====================Test ===================");
 	}
 }
