@@ -254,44 +254,99 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 			return (max[len - 1] - min[len - 1]);
 		}
 
-		// TODO: build it
+		
 		// TODO: make it a PrioQueue => we need a fast and easy eval for this (faster
 		// then the one for our leaves)
 		private Queue<State> getExtensions() {
+			int[] player;
+			int[] enemy;
+			if (player_max) {
+				player = this.max;
+				enemy = this.min;
+			} else {
+				player = this.min;
+				enemy = this.max;
+			}
+
 			Queue<State> children = new LinkedList<State>();
-			for(int i = 0; i < max.length; i++) {
-				if(max[i] != 0 && i < (max.length -1)) {
-					children.add(move(i));
+			for (int i = 0; i < player.length-1; i++) {
+				if (player[i] != 0) {
+					children.addAll(move(i));
 				}
 			}
 			return children;
 		}
-		
-		//Makes a move and returns the resulting State
-		private State move(int house) {
+
+		// Makes a move and returns the resulting State
+		private Queue<State> move(int house) {
+			Queue<State> move = new LinkedList<State>();
 			int curStones = max[house];
-			for(int i = house +1; i < max.length -1; i++) {
-				
-			
+			State newState = new State(this);
+			newState.player_max = !this.player_max;
+			int[] player;
+			int[] enemy;
+			if (this.player_max) {
+				player = newState.max;
+				enemy = newState.min;
+			} else {
+				player = newState.min;
+				enemy = newState.max;
 			}
-			
-			
-			return null;
+
+			for (int i = house + 1; i < player.length; i++) {
+				if (curStones > 0) {
+					player[i]++;
+					curStones--;
+					// Stein kann in einem leeren Feld landen und ich bekomme alle Gegnerischen
+					// Steine
+					// letzeter Stein + nicht im Kalah + davor leeres Feld
+					if ((curStones == 0) && (i != player.length - 1) && (player[i] == 1)) {
+						int enemyStones = enemy[enemy.length - 2 - i];
+						enemy[enemy.length - 2 - i] = 0;
+						player[i] = 0;
+						player[player.length - 1] += enemyStones + 1;
+					}else if((curStones == 0) && (i == player.length -1)) {
+						move.addAll(newState.getExtensions());
+					}
+				}
+			}
+			while (curStones > 0) {
+				for (int i = enemy.length - 2; i >= 0; i--) {
+					if (curStones > 0) {
+						enemy[i]++;
+						curStones--;
+					}
+				}
+				if (curStones > 0) {
+					enemy[newState.min.length - 1]++;
+					curStones--;
+				}
+				for (int i = 0; i < player.length; i++) {
+					if (curStones > 0) {
+						player[i]++;
+						curStones--;
+						if ((curStones == 0) && (i != player.length - 1) && (player[i] == 1)) {
+							int enemyStones = enemy[enemy.length - 2 - i];
+							enemy[enemy.length - 2 - i] = 0;
+							player[i] = 0;
+							player[player.length - 1] += enemyStones + 1;
+						}else if((curStones == 0) && (i == player.length -1)) {
+							move.addAll(newState.getExtensions());
+						}
+					}
+				}
+
+			}
+			move.add(newState);
+			return move;
 		}
-		
-		
-		//Is a move possible with this house?
-		private boolean possibleMove(int house, State state) {
-			
-			
-			return false;
-		}
-		
-		
-		
-		
-		
-		
+
+//		// Is a move possible with this house?
+//		private boolean possibleMove(int house, State state) {
+//
+//			return false;
+//		}
+
 		/*
 		 * TODO: remember Alles sich zu merken, was einmal berechnet wurde, ist ein zu
 		 * großer Overhead. Angenommen wir haben den fertig berechneten Baum und haben
