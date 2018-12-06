@@ -10,8 +10,8 @@ import java.util.Queue;
 import java.util.LinkedList;
 
 public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
-	private Board b;
-	private MyBoard mb;
+	private Board	b;
+	private MyBoard	mb;
 
 	@Override
 	public String name() {
@@ -42,22 +42,25 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 		// max = upper half ? // TODO
 		// min = under half
 		// store => .length - 1
-		private int[] max; // int is faster then short in most cases
-							// .... fuck cpu nativ stuff
-		private int[] min; // => short is slower on x86 -- I expect to
-							// play on an modern cpu ^^"
+		private int[]				max;										// int is faster then short in most
+																				// cases
+																				// .... fuck cpu nativ stuff
+		private int[]				min;										// => short is slower on x86 -- I expect
+																				// to
+																				// play on an modern cpu ^^"
 		// ref to board => update
-		private Board board;
+		private Board				board;
 
 		// Value of Max, Min wins or a draw
-		private final static int MAX_V = 10000, MIN_V = -10000, DRAW_V = 0;
-		private final int DRAWSTONES; // die Haelfte aller Steine im Spiel. Haben beide Spieler
-										// diese Anzahl ist es Unentschieden
+		private final static int	MAX_V	= 10000, MIN_V = -10000, DRAW_V = 0;
+		private final int			DRAWSTONES;									// die Haelfte aller Steine im Spiel.
+																				// Haben beide Spieler
+																				// diese Anzahl ist es Unentschieden
 
-		private final static int UNUSED = 42_666;
+		private final static int	UNUSED	= 42_666;
 
 		// Konstruktor
-		private MyBoard(Board board) {
+		private MyBoard (Board board) {
 			this.board = board;
 			update();
 			DRAWSTONES = this.board.houses() * this.board.initSeeds();
@@ -90,7 +93,7 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 			for (int i = 0; i < 15; i++) { // iterativ deepening //TODO: change 15 to a timeout based search
 				re = deaper(getState(), i, UNUSED, UNUSED)[0];
 			}
-			return re;
+			return re + 1; // +1 da scala mit 1 startet anstatt mit 0 -.-
 		}
 
 		// recusiv deepening
@@ -151,22 +154,23 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 			return re;
 		}
 
-
 	}
 
 	private class State {
-		private int[] max;
-		private int[] min;
-		private boolean isFinal = false; // ob state schon zu Ende ist
-		private int ergebnis = 2; // -1 Min gewinnt, 0 Draw, 1 Max gewinnt, 2 sie spielen noch
-		private final int MAX_V;
-		private final int DRAWSTONES;
+		// TODO: refactor max, min to player and enemy
+		// Ein Spieler
+		private int[]		max;
+		private int[]		min;
+		private boolean		isFinal		= false;	// ob state schon zu Ende ist
+		private int			ergebnis	= 2;		// -1 Min gewinnt, 0 Draw, 1 Max gewinnt, 2 sie spielen noch
+		private final int	MAX_V;
+		private final int	DRAWSTONES;
 		// player_max == true => its max's turn
 		// player_max == false => its mins turn
-		private boolean player_max;
-		private int len;
+		private boolean		player_max;
+		private int			len;
 
-		private State(MyBoard b) {
+		private State (MyBoard b) {
 			MAX_V = b.MAX_V; // TODO: hier waere es vll sinnvoller, nicht fuer jeden State extra die ganzen
 								// Variablen
 								// anzulegen sondern einfach das Board auch in State als Attribut speichern
@@ -193,7 +197,7 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 			}
 		}
 
-		private State(State s) {
+		private State (State s) {
 			DRAWSTONES = s.DRAWSTONES;
 			MAX_V = s.MAX_V;
 			isFinal = s.isFinal;
@@ -204,8 +208,8 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 		}
 
 		// zur Kalibrierung der Heuristik
-		int maxHeu = 1000;
-		int minHeu = -maxHeu;
+		int	maxHeu	= 1000;
+		int	minHeu	= -maxHeu;
 
 		/*
 		 * TODO: eval => heuristik look up Board.max_V .min_V draw_V
@@ -215,8 +219,7 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 				return ergebnis * MAX_V;
 			}
 			int[] weights = { 1, 1, 1, 1, 1, 1, 1 };
-			return weights[0] * h0() + weights[1] * h1() + weights[2] * h2() + weights[3] * h3() + weights[4] * h4()
-					+ weights[5] * h5() + weights[6] * h6();
+			return weights[0] * h0() + weights[1] * h1() + weights[2] * h2() + weights[3] * h3() + weights[4] * h4() + weights[5] * h5() + weights[6] * h6();
 		}
 
 		private int h0() {
@@ -247,22 +250,18 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 			return (max[len - 1] - min[len - 1]);
 		}
 
-		
 		// TODO: make it a PrioQueue => we need a fast and easy eval for this (faster
 		// then the one for our leaves)
 		private Queue<State> getExtensions() {
 			int[] player;
-			int[] enemy;
 			if (player_max) {
 				player = this.max;
-				enemy = this.min;
 			} else {
 				player = this.min;
-				enemy = this.max;
 			}
 
 			Queue<State> children = new LinkedList<State>();
-			for (int i = 0; i < player.length-1; i++) {
+			for (int i = 0; i < len - 1; i++) {
 				if (player[i] != 0) {
 					children.addAll(move(i));
 				}
@@ -272,10 +271,9 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 
 		// Makes a move and returns the resulting State
 		private Queue<State> move(int house) {
-			Queue<State> move = new LinkedList<State>();
-			int curStones = max[house];
 			State newState = new State(this);
-			newState.player_max = !this.player_max;
+			// newState.player_max = !this.player_max; // TODO: Will ich das so fr"uh haben => ich k"onnte ja wieder am
+			// zug sein (?)
 			int[] player;
 			int[] enemy;
 			if (this.player_max) {
@@ -286,59 +284,108 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 				enemy = newState.max;
 			}
 
-			for (int i = house + 1; i < player.length; i++) {
-				if (curStones > 0) {
-					player[i]++;
-					curStones--;
-					// Stein kann in einem leeren Feld landen und ich bekomme alle Gegnerischen
-					// Steine
-					// letzeter Stein + nicht im Kalah + davor leeres Feld
-					if ((curStones == 0) && (i != player.length - 1) && (player[i] == 1)) {
-						int enemyStones = enemy[enemy.length - 2 - i];
-						enemy[enemy.length - 2 - i] = 0;
-						player[i] = 0;
-						player[player.length - 1] += enemyStones + 1;
-					}else if((curStones == 0) && (i == player.length -1)) {
-						move.addAll(newState.getExtensions());
-					}
-				}
-			}
-			while (curStones > 0) {
-				for (int i = enemy.length - 2; i >= 0; i--) {
-					if (curStones > 0) {
-						enemy[i]++;
-						curStones--;
-					}
-				}
-				if (curStones > 0) {
-					enemy[newState.min.length - 1]++;
-					curStones--;
-				}
-				for (int i = 0; i < player.length; i++) {
-					if (curStones > 0) {
-						player[i]++;
-						curStones--;
-						if ((curStones == 0) && (i != player.length - 1) && (player[i] == 1)) {
-							int enemyStones = enemy[enemy.length - 2 - i];
-							enemy[enemy.length - 2 - i] = 0;
-							player[i] = 0;
-							player[player.length - 1] += enemyStones + 1;
-						}else if((curStones == 0) && (i == player.length -1)) {
-							move.addAll(newState.getExtensions());
-						}
-					}
-				}
+			// =====================================================================================
+			// Karols Vorschlag
+			// take all stones and place them
+			int curStones = max[house];
+			int index = house;
+			final int indexEnemyStore = 2 * len - 1; // TODO: double check
 
+			while (curStones > 0) {
+				if (index == indexEnemyStore) { // skip enemy
+					index = 0; // equals to index = ( index +1 ) % 2*len
+					continue; // TODO: solve it without continue
+				}
+				// else place a stone into next field
+				curStones--; //
+				index++; // I start at my original house => first calc new then place
+				// now actually place it
+				if (index < len) {
+					player[index]++;
+				} else {
+					enemy[index % len]++;
+				}
 			}
+			if (index < len) {
+				/*
+				 * I ended up on my side => Therefore there are 2 special cases
+				 * 
+				 * a) I ended up in an prev. empty field (! not my freaking store)
+				 * b) Am I next due to ending up in
+				 */
+				if (index == len - 1) { // b) => I am at my store
+					return newState.getExtensions();
+				} else if (player[index] == 1) {// a)
+					// code reused
+					int enemyStones = enemy[enemy.length - 2 - index];
+					enemy[enemy.length - 2 - index] = 0;
+					player[index] = 0;
+					player[player.length - 1] += enemyStones + 1;
+				}
+			}
+			Queue<State> move = new LinkedList<State>();
+			newState.player_max = !this.player_max;
 			move.add(newState);
 			return move;
+			// Karols Vorschlag ENDE
+			// =====================================================================================
+
+			// Max:
+			/*
+			 * for (int i = house + 1; i < player.length; i++) {
+			 * if (curStones > 0) {
+			 * player[i]++;
+			 * curStones--;
+			 * // Stein kann in einem leeren Feld landen und ich bekomme alle Gegnerischen
+			 * // Steine
+			 * // letzeter Stein + nicht im Kalah + davor leeres Feld
+			 * if ((curStones == 0) && (i != player.length - 1) && (player[i] == 1)) {
+			 * int enemyStones = enemy[enemy.length - 2 - i];
+			 * enemy[enemy.length - 2 - i] = 0;
+			 * player[i] = 0;
+			 * player[player.length - 1] += enemyStones + 1;
+			 * } else if ((curStones == 0) && (i == player.length - 1)) {
+			 * move.addAll(newState.getExtensions());
+			 * }
+			 * }
+			 * }
+			 * while (curStones > 0) {
+			 * for (int i = enemy.length - 2; i >= 0; i--) {
+			 * if (curStones > 0) {
+			 * enemy[i]++;
+			 * curStones--;
+			 * }
+			 * }
+			 * if (curStones > 0) {
+			 * enemy[newState.min.length - 1]++;
+			 * curStones--;
+			 * }
+			 * for (int i = 0; i < player.length; i++) {
+			 * if (curStones > 0) {
+			 * player[i]++;
+			 * curStones--;
+			 * if ((curStones == 0) && (i != player.length - 1) && (player[i] == 1)) {
+			 * int enemyStones = enemy[enemy.length - 2 - i];
+			 * enemy[enemy.length - 2 - i] = 0;
+			 * player[i] = 0;
+			 * player[player.length - 1] += enemyStones + 1;
+			 * } else if ((curStones == 0) && (i == player.length - 1)) {
+			 * move.addAll(newState.getExtensions());
+			 * }
+			 * }
+			 * }
+			 * 
+			 * }
+			 * move.add(newState);
+			 * return move;
+			 */
 		}
 
-//		// Is a move possible with this house?
-//		private boolean possibleMove(int house, State state) {
-//
-//			return false;
-//		}
+		// // Is a move possible with this house?
+		// private boolean possibleMove(int house, State state) {
+		//
+		// return false;
+		// }
 
 		/*
 		 * TODO: remember Alles sich zu merken, was einmal berechnet wurde, ist ein zu

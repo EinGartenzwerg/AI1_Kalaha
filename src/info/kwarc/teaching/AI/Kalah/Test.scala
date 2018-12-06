@@ -14,6 +14,6 @@ object Test {
 
     //new Game(new HumanPlayer("Hans"),new RandomPlayer("Hurtz"),int + Terminal)(12,12).play
     //new Game(new HumanPlayer("Hans"),new RandomPlayer("Hurtz"),int + Terminal)(12,12).play
-    new Game(new HumanPlayer("Hans"), new Chiron(), int + Terminal)(12, 12).play
+    new Game(new HumanPlayer("Hans"), new Chiron(), int + Terminal)(3, 3).play
   }
 }
