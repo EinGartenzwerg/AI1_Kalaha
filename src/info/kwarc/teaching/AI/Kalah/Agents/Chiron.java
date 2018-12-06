@@ -151,13 +151,6 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 			return re;
 		}
 
-		private boolean chooseNew(int alt, int neu, boolean player_max) {
-			if (player_max) {
-				return alt < neu;
-			} else {
-				return neu < alt;
-			}
-		}
 
 	}
 
