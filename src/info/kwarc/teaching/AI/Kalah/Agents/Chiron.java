@@ -3,6 +3,7 @@ package info.kwarc.teaching.AI.Kalah.Agents;
 import info.kwarc.teaching.AI.Kalah.Board;
 import info.kwarc.teaching.AI.Kalah.util.Converter;
 
+import java.security.AlgorithmConstraints;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Queue;
@@ -28,6 +29,8 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 
 	@Override
 	public int move() {
+		// test_search(); // just for test
+		// return -1;
 		mb.update();
 		return mb.search();
 	}
@@ -66,6 +69,12 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 			DRAWSTONES = this.board.houses() * this.board.initSeeds();
 		}
 
+		private MyBoard (int[] max, int[] min) { // just for testing
+			this.max = max;
+			this.min = min;
+			DRAWSTONES = 36;
+		}
+
 		// update: uses this.board => init werte vom board
 		private void update() {
 			ArrayList<Integer> in_max = Converter.getMyHouses(board, true);
@@ -79,9 +88,9 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 				max[i] = in_max.get(i).intValue();
 				min[i] = in_min.get(i).intValue();
 			}
-			System.out.println("My Turn - starting on ");
-			getState().print();
-			System.out.println();
+			// System.out.println("My Turn - starting on ");
+			// getState().print();
+			// System.out.println();
 		}
 
 		private State getState() {
@@ -90,67 +99,73 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 			return max_plays_this;
 		}
 
-		// start iterativ depenig
+		// start iterativ depening
 		private int search() {
 			int re = 0;
 			for (int i = 0; i < 1; i++) { // iterativ deepening //TODO: change 15 to a timeout based search
-				re = deaper(getState(), 5, UNUSED, UNUSED)[0]; // TODO: tiefe sollte i werden
+				re = deaper(getState(), 10, MIN_V, MAX_V)[1]; // TODO: tiefe sollte i werden
 			}
 			return re + 1; // +1 da scala mit 1 startet anstatt mit 0 -.-
 		}
 
 		// recusiv deepening
-		// int[0] value of the best move
+		// [0] ==> value of the best move
+		// [1] ==> int of the move
 		// TODO: parallelisieren
-		// TODO: upgrade to alpha beta saerch => use int[] with idex alpha == 1 and beta
-		// == 2
 		// TODO: endrekusiviere
-		// TODO: Queue in header needed ?
 		// TODO: player_max needed ? => its in my State ....
 		private int[] deaper(State next, int depth, int alpha, int beta) {
-			if (next == null) { // should never happen //TODO: check wether it will never happen
-				return null;
-			}
-			int[] re = new int[3]; // TODO: init => alpha and beta need to have set to a not possible Value (
-									// \notin
-			re[1] = re[2] = UNUSED; // [min_V,maxV])
+			// System.out.println("max_player " + next.player_max + " depth: " + depth + " a: " + alpha + " b: " +
+			// beta);
+			// next.print();
+			// System.out.println("------------------------------------");
+			int[] re = new int[2];
 			re[0] = next.player_max ? MIN_V : MAX_V;
-			if (depth == 0) {
+			re[1] = -3;
+
+			if (depth == 0) { // Base case
 				re[0] = next.eval();
+				// System.out.println("===========> " + re[0]);
+				re[1] = -33;
 				return re;
 			}
+
 			Queue<State> children = next.getExtensions();
 			State next_child = children.poll();
-
-			// TODO: remember the best way and how to get there
 			while (next_child != null) {
 				int[] result = deaper(next_child, depth - 1, alpha, beta);
-				next_child = children.poll();
-				// if (result != null && chooseNew(re[0], result[0], next.player_max)) {
-				// re = result;
-				// }
-				if (result != null) { // TODO remove ASAP => deaper should never return null;
-					if (next.player_max) { // I am Max
-						if (re[0] < result[0]) {
-							re = result;
-						}
-						if (re[0] > beta) { // TODO: beta
-							return re;
-						} else {
-							beta = re[0];
-						}
-					} else { // I am Min
-						if (result[0] < re[0]) {
-							re = result;
-						}
-						if (re[0] < alpha) { // TODO: alpha
-							return re;
-						}
+				if (next.player_max) { // I am Max
+					if (re[0] <= result[0]) {
+						re[0] = result[0];
+						re[1] = next_child.prev_move;
+					}
+					if (re[0] > beta) {
+						// System.out.println("GET out (beta) re: " +re[0] + " " +"max_player "+ next.player_max + "
+						// depth: " + depth + " a: "+ alpha + " b: " +beta );
+						return re;
+					}
+					if (re[0] > alpha) {
+						alpha = re[0];
+					}
+				} else { // I am Min
+					if (re[0] >= result[0]) {
+						re[0] = result[0];
+						re[1] = next_child.prev_move;
+					}
+					if (re[0] < alpha) {
+						// System.out.println("GET out (alpha) re: " +re[0] + " " +"max_player "+ next.player_max + "
+						// depth: " + depth + " a: "+ alpha + " b: " +beta );
+						return re;
+					}
+					if (re[0] < beta) {
+						beta = re[0];
 					}
 				}
+				next_child = children.poll();
 			}
-			// laut compiler deadCode // TODO double check it
-			// if (re == null) return null; // sollte nicht eintretten :S
+			// System.out.println();
+			// System.out.println( "<<<<<<<<<<<<");
+			// System.out.println();
 
 			return re;
 		}
@@ -170,6 +185,9 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 		// player_max == false => its mins turn
 		private boolean		player_max;
 		private int			len;
+		int					prev_move	= -1;		// 1,2,... len
+													// how to get there
+													// -1 if starting state
 
 		private State (MyBoard b) {
 			MAX_V = b.MAX_V; // TODO: hier waere es vll sinnvoller, nicht fuer jeden State extra die ganzen
@@ -206,6 +224,11 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 			len = s.max.length;
 			max = Arrays.copyOf(s.max, len);
 			min = Arrays.copyOf(s.min, len);
+		}
+
+		private State (State s, int prev) {
+			this(s);
+			prev_move = prev;
 		}
 
 		// zur Kalibrierung der Heuristik
@@ -277,7 +300,7 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 
 		// Makes a move and returns the resulting State
 		private Queue<State> move(int house) {
-			State newState = new State(this);
+			State newState = new State(this, house);
 			// newState.player_max = !this.player_max; // TODO: Will ich das so fr"uh haben => ich k"onnte ja wieder am
 			// zug sein (?)
 			int[] player;
@@ -296,19 +319,7 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 			int curStones = player[house];
 			player[house] = 0;
 			int index = house;
-			final int indexEnemyStore = 2 * len - 1; // TODO: double check
 			while (curStones > 0) {
-				// index++; // I start at my original house => first calc new then place
-
-				/*
-				 * if (index == indexEnemyStore) { // skip enemy
-				 * System.out.println("HEAASDASD ");
-				 * index = 0; // equals to
-				 * continue; // TODO: solve it without continue
-				 * }
-				 */
-				// System.out.println(" " + curStones + " " + index + " " + (index % len) + " " + len + " " +
-				// indexEnemyStore);
 				index = (index + 1) % (2 * len - 1);
 				// else place a stone into next field
 				curStones--; //
@@ -319,7 +330,7 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 					enemy[index % len]++;
 				}
 			}
-			if (index < -1) {// (index <len) {
+			if (index < len) {
 				/*
 				 * I ended up on my side => Therefore there are 2 special cases
 				 * 
@@ -328,11 +339,11 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 				 */
 				if (index == len - 1) { // b) => I am at my store
 					// System.out.println("Moved i: " + index + " And i get to play again");
-					//newState.print();
+					// newState.print();
 					// System.out.println("---------------------->");
 					return newState.getExtensions();
-				} else if (player[index] == 1) {// a)
-					System.out.println("Wierd suff ?");
+				} else if (player[index] == 1 && enemy[enemy.length - 2 - index] > 0) {// a)
+					// System.out.println("Wierd suff ?");
 					// code reused
 					int enemyStones = enemy[enemy.length - 2 - index];
 					enemy[enemy.length - 2 - index] = 0;
@@ -439,10 +450,6 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 		}
 	}
 
-	public static void main(String[] args) {
-
-	}
-
 	private void test_getExtensions_skip_enemyStore() {
 		System.out.println("====================Test ===================");
 		State a = new State(mb);
@@ -456,6 +463,24 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 		for (State s : a.move(2)) {
 			s.print();
 		}
+		System.out.println("====================Test ===================");
+	}
+
+	private void test_search2() {
+		System.out.println("====================Test ===================");
+		int[] ma = { 6, 6, 6, 6, 6, 6, 0 };
+		int[] mi = { 6, 6, 6, 6, 6, 6, 0 };
+		MyBoard mb = new MyBoard(ma, mi);
+		System.out.println(mb.search());
+		System.out.println("====================Test ===================");
+	}
+
+	private void test_search() {
+		System.out.println("====================Test ===================");
+		int[] ma = { 1, 0, 9, 9, 8, 8, 2 };
+		int[] mi = { 1, 0, 8, 8, 8, 8, 2 };
+		MyBoard mb = new MyBoard(ma, mi);
+		System.out.println(mb.search());
 		System.out.println("====================Test ===================");
 	}
 }
