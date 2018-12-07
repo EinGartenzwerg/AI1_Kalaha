@@ -18,6 +18,7 @@ public class State implements Comparable<State> {
 	private int		len;
 	private boolean	prev_player;
 	private int		prev_move	= -1;		// 1,2,... len
+	private int		drawseeds;
 	// how to get there
 	// -1 if starting state
 
@@ -25,6 +26,8 @@ public class State implements Comparable<State> {
 		len = max.length;
 		this.max = Arrays.copyOf(max, len);
 		this.min = Arrays.copyOf(min, len);
+		this.drawseeds = drawseeds;
+		calcIsFinal();
 
 	}
 
@@ -139,10 +142,10 @@ public class State implements Comparable<State> {
 	}
 
 	public void calcIsFinal() {
-		int drawseeds = MyBoard.DRAWSTONES;
-		if (drawseeds == -1) {
-			return;
-		}
+//		int drawseeds = MyBoard.DRAWSTONES;
+//		if (drawseeds == -1) {
+//			return;
+//		}
 
 		if (max[len - 1] >= drawseeds) { // berechnet isFinal und Ergebnis "moeglichst effizient"
 			if (max[len - 1] == drawseeds) {
@@ -161,7 +164,7 @@ public class State implements Comparable<State> {
 	}
 
 	public int spielStand() {
-		return spielStand();
+		return ergebnis;
 	}
 
 	public int[] getMax() {
