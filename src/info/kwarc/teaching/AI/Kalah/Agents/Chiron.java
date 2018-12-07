@@ -13,7 +13,7 @@ import java.util.LinkedList;
 public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 	private Board	b;
 	private MyBoard	mb;
-
+	private boolean playerOne;
 	@Override
 	public String name() {
 		return "Chiron";
@@ -23,7 +23,7 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 	public void init(Board board, boolean playerOne) {
 		b = board;
 		mb = new MyBoard(b);
-		// TODO: was macht playerOne ?
+		this.playerOne = playerOne;
 		// TODO: start thinking
 	}
 
@@ -77,10 +77,10 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 
 		// update: uses this.board => init werte vom board
 		private void update() {
-			ArrayList<Integer> in_max = Converter.getMyHouses(board, true);
-			ArrayList<Integer> in_min = Converter.getMyHouses(board, false);
-			in_max.add(Converter.getMyStoreSeeds(board, true));
-			in_min.add(Converter.getMyStoreSeeds(board, false));
+			ArrayList<Integer> in_max = Converter.getMyHouses(board, playerOne);
+			ArrayList<Integer> in_min = Converter.getMyHouses(board, playerOne);
+			in_max.add(Converter.getMyStoreSeeds(board, playerOne));
+			in_min.add(Converter.getMyStoreSeeds(board, playerOne));
 			int n = in_max.size();
 			max = new int[n];
 			min = new int[n];
@@ -88,14 +88,14 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 				max[i] = in_max.get(i).intValue();
 				min[i] = in_min.get(i).intValue();
 			}
-			// System.out.println("My Turn - starting on ");
-			// getState().print();
-			// System.out.println();
+//			System.out.println(" \n My Turn - starting on ");
+//			getState().print();
+//			System.out.println();
 		}
 
 		private State getState() {
 			State max_plays_this = new State(this);
-			max_plays_this.player_max = false;
+			max_plays_this.player_max = true;
 			return max_plays_this;
 		}
 
@@ -334,13 +334,10 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 				 * b) Am I next due to ending up in
 				 */
 				if (index == len - 1) { // b) => I am at my store
-					// System.out.println("Moved i: " + index + " And i get to play again");
-					// newState.print();
-					// System.out.println("---------------------->");
+
 					newState.player_max = this.player_max;
 					return newState;
 				} else if (player[index] == 1 && enemy[enemy.length - 2 - index] > 0) {// a)
-					// System.out.println("Wierd suff ?");
 					// code reused
 					int enemyStones = enemy[enemy.length - 2 - index];
 					enemy[enemy.length - 2 - index] = 0;
@@ -350,19 +347,6 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 			}
 			newState.player_max = !this.player_max;
 			return newState;
-
-			/*
-			 * State false
-			 * Max:[0, 5, 0, 2]
-			 * Min:[0, 5, 5, 1]
-			 * 
-			 * State true
-			 * Max:[1, 6, 1, 2]
-			 * Min:[0, 0, 6, 2]
-			 * State true
-			 * Max:[1, 6, 1, 3]
-			 * Min:[0, 5, 0, 2]
-			 */
 			// Karols Vorschlag ENDE
 			// =====================================================================================
 
