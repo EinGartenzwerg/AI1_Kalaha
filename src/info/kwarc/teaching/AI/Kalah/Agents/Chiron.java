@@ -7,7 +7,6 @@ import info.kwarc.teaching.AI.Kalah.Board;
 public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 	private Board	b;
 	private MyBoard	mb;
-	private boolean	playerOne;
 
 	@Override
 	public String name() {
@@ -18,7 +17,6 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 	public void init(Board board, boolean playerOne) {
 		b = board;
 		mb = new MyBoard(b, playerOne);
-		this.playerOne = playerOne;
 		// TODO: start thinking
 	}
 
@@ -27,6 +25,8 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 		mb.update();
 		int re = mb.search(10);
 		return re;
+		//debugging();
+		//return -3;
 	}
 
 	@Override
@@ -75,6 +75,18 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 			child.print();
 
 		}
+		System.out.println("====================================<<<<<<<<<");
+
+	}
+
+	private void debugging() {
+		int[] min = { 2, 0, 17, 0, 14, 7, 5 };
+		int[] max = { 3, 2, 0, 0, 15, 0, 7 };
+		System.out.println("====================================>>>>>>>>>");
+		MyBoard b = new MyBoard(max, min);
+		b.getState().print();
+		System.out.println(b.search(10));
+
 		System.out.println("====================================<<<<<<<<<");
 
 	}

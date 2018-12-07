@@ -30,6 +30,15 @@ public class State implements Comparable<State> {
 		calcIsFinal();
 
 	}
+	public State (int[] max, int[] min, int drawseeds, boolean b) {
+		len = max.length;
+		this.max = Arrays.copyOf(max, len);
+		this.min = Arrays.copyOf(min, len);
+		this.drawseeds = drawseeds;
+		currentPlayer_is_max = b;
+		calcIsFinal();
+
+	}
 
 	public State (State s) {
 		isFinal = s.isFinal;
@@ -132,7 +141,7 @@ public class State implements Comparable<State> {
 
 	@Override
 	public String toString() { // TODO: make this a usefull heuristik
-		return "" + getMyStore();
+		return "" + prev_move;
 	}
 
 	// ====================================================================================================================================

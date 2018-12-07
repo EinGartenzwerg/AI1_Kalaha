@@ -33,6 +33,7 @@ public class MyBoard {
 		this.player = max;
 		this.enemy = min;
 		DRAWSTONES = 36;
+		playerOne = false;
 	}
 
 	// update: uses this.board => init werte vom board
@@ -50,8 +51,8 @@ public class MyBoard {
 		}
 	}
 
-	private State getState() {
-		return new State(player, enemy, DRAWSTONES);
+	public State getState() {
+		return new State(player, enemy, DRAWSTONES,true);
 	}
 
 	// start einfache suche
