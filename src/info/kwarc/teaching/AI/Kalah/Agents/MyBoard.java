@@ -58,7 +58,7 @@ public class MyBoard {
 	public int search(int d) {
 		int[] re = deaper(getState(), d, MIN_V, MAX_V);
 		re[1]++;// +1 da scala mit 1 startet anstatt mit 0 -.-
-		System.out.println("[AI_THINKS]:		Depth: " + d + "	Move " + re[1] + "		Value " + re[0]);
+//		System.out.println("[AI_THINKS]:		Depth: " + d + "	Move " + re[1] + "		Value " + re[0]);
 		return re[1];
 	}
 
@@ -75,10 +75,10 @@ public class MyBoard {
 		re[0] = current_player_max ? MIN_V : MAX_V;
 		re[1] = -42;
 		if (depth == 0) { // Base case
-			re[0] = Heuristik.evalState(next);
-//			System.out.println("																												Leaf: value" + re[0]);
+			re[0] = next.getValue();
 			return re;
 		}
+
 		Queue<State> children = next.getExtensions();
 		State next_child = children.poll();
 		while (next_child != null) {
@@ -88,25 +88,23 @@ public class MyBoard {
 					re[0] = result[0];
 					re[1] = next_child.prev_move;
 				}
+				if (re[0] > beta) {
+					return re;
+				}
 				if (re[0] > alpha) {
 					alpha = re[0];
 				}
-				if (alpha >= beta) {
-					return re;
-				}
-
 			} else { // I am Min
 				if (re[0] >= result[0]) {
 					re[0] = result[0];
 					re[1] = next_child.prev_move;
 				}
+				if (re[0] < alpha) {
+					return re;
+				}
 				if (re[0] < beta) {
 					beta = re[0];
 				}
-				if (beta <= alpha) {
-					return re;
-				}
-
 			}
 			next_child = children.poll();
 		}
