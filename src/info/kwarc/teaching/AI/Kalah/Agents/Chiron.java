@@ -3,17 +3,14 @@ package info.kwarc.teaching.AI.Kalah.Agents;
 import info.kwarc.teaching.AI.Kalah.Board;
 import info.kwarc.teaching.AI.Kalah.util.Converter;
 
-import java.security.AlgorithmConstraints;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Queue;
-
-import java.util.LinkedList;
 
 public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 	private Board	b;
 	private MyBoard	mb;
-	private boolean playerOne;
+	private boolean	playerOne;
+
 	@Override
 	public String name() {
 		return "Chiron";
@@ -29,8 +26,6 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 
 	@Override
 	public int move() {
-		// test_search(); // just for test
-		// return -1;
 		mb.update();
 		return mb.search();
 	}
@@ -88,14 +83,13 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 				max[i] = in_max.get(i).intValue();
 				min[i] = in_min.get(i).intValue();
 			}
-//			System.out.println(" \n My Turn - starting on ");
-//			getState().print();
-//			System.out.println();
+			// System.out.println(" \n My Turn - starting on ");
+			// getState().print();
+			// System.out.println();
 		}
 
 		private State getState() {
-			State max_plays_this = new State(this);
-			max_plays_this.player_max = true;
+			State max_plays_this = new State(max,min,DRAWSTONES);
 			return max_plays_this;
 		}
 
@@ -120,10 +114,10 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 			// next.print();
 			// System.out.println("------------------------------------");
 			int[] re = new int[2];
-			re[0] = next.player_max ? MIN_V : MAX_V;
+			re[0] = next.getCurrentPlayer_is_max() ? MIN_V : MAX_V;
 			re[1] = -42;
 			if (depth == 0) { // Base case
-				re[0] = next.eval();
+				re[0] = next.getValue();
 				// System.out.println("===========> " + re[0]);
 				return re;
 			}
@@ -132,7 +126,7 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 			State next_child = children.poll();
 			while (next_child != null) {
 				int[] result = deaper(next_child, depth - 1, alpha, beta);
-				if (next.player_max) { // I am Max
+				if (next.getCurrentPlayer_is_max()) { // I am Max
 					if (re[0] <= result[0]) {
 						re[0] = result[0];
 						re[1] = next_child.prev_move;
@@ -170,294 +164,182 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 
 	}
 
-	private class State {
-		// TODO: refactor max, min to player and enemy
-		// Ein Spieler
-		private int[]		max;
-		private int[]		min;
-		private boolean		isFinal		= false;	// ob state schon zu Ende ist
-		private int			ergebnis	= 2;		// -1 Min gewinnt, 0 Draw, 1 Max gewinnt, 2 sie spielen noch
-		private final int	MAX_V;
-		private final int	DRAWSTONES;
-		// player_max == true => its max's turn
-		// player_max == false => its mins turn
-		private boolean		player_max;
-		private int			len;
-		int					prev_move	= -1;		// 1,2,... len
-													// how to get there
-													// -1 if starting state
-
-		private State (MyBoard b) {
-			MAX_V = b.MAX_V; // TODO: hier waere es vll sinnvoller, nicht fuer jeden State extra die ganzen
-								// Variablen
-								// anzulegen sondern einfach das Board auch in State als Attribut speichern
-
-			DRAWSTONES = b.DRAWSTONES;
-			len = b.max.length;
-
-			max = Arrays.copyOf(b.max, len);
-			min = Arrays.copyOf(b.min, len);
-
-			if (max[len - 1] >= DRAWSTONES) { // berechnet isFinal und Ergebnis "moeglichst effizient"
-				if (max[len - 1] == DRAWSTONES) {
-					if (min[len - 1] == DRAWSTONES) {
-						isFinal = true;
-						ergebnis = 0;
-					}
-				} else {
-					isFinal = true;
-					ergebnis = 1;
-				}
-			} else if (min[len - 1] > DRAWSTONES) {
-				isFinal = true;
-				ergebnis = -1;
-			}
-		}
-
-		private State (State s) {
-			DRAWSTONES = s.DRAWSTONES;
-			MAX_V = s.MAX_V;
-			isFinal = s.isFinal;
-			ergebnis = s.ergebnis;
-			len = s.max.length;
-			max = Arrays.copyOf(s.max, len);
-			min = Arrays.copyOf(s.min, len);
-		}
-
-		private State (State s, int prev) {
-			this(s);
-			prev_move = prev;
-		}
-
-		// zur Kalibrierung der Heuristik
-		int	maxHeu	= 1000;
-		int	minHeu	= -maxHeu;
-
-		/*
-		 * TODO: eval => heuristik look up Board.max_V .min_V draw_V
-		 */
-		private int eval() { // wird noch optimiert, nur zum Testen bzgl Gewichtungen
-			if (isFinal) {
-				return ergebnis * MAX_V;
-			}
-			int[] weights = { 1, 1, 1, 1, 1, 1, 1 };
-			return weights[0] * h0() + weights[1] * h1() + weights[2] * h2() + weights[3] * h3() + weights[4] * h4() + weights[5] * h5() + weights[6] * h6();
-		}
-
-		private int h0() {
-			return 0;
-		}
-
-		private int h1() {
-			return 0;
-		}
-
-		private int h2() {
-			return 0;
-		}
-
-		private int h3() {
-			return 0;
-		}
-
-		private int h4() {
-			return 0;
-		}
-
-		private int h5() {
-			return 0;
-		}
-
-		private int h6() { // differenz in Punkten
-			return (max[len - 1] - min[len - 1]);
-		}
-
-		// TODO: make it a PrioQueue => we need a fast and easy eval for this (faster
-		// then the one for our leaves)
-		private Queue<State> getExtensions() {
-			int[] player;
-			if (player_max) {
-				player = this.max;
-			} else {
-				player = this.min;
-			}
-			// System.out.println("====================GET ===================");
-			// System.out.println();
-			// print();
-			// System.out.println();
-			Queue<State> children = new LinkedList<State>();
-			for (int i = 0; i < len - 1; i++) {
-				if (player[i] != 0) {
-					children.add(move(i));
-				}
-			}
-			// System.out.println("====================End ===================");
-			return children;
-
-		}
-
-		// Makes a move and returns the resulting State
-		private State move(int house) {
-			State newState = new State(this, house);
-			int[] player;
-			int[] enemy;
-			if (this.player_max) {
-				player = newState.max;
-				enemy = newState.min;
-			} else {
-				player = newState.min;
-				enemy = newState.max;
-			}
-
-			// =====================================================================================
-			// Karols Vorschlag
-			// take all stones and place them
-			int curStones = player[house];
-			player[house] = 0;
-			int index = house;
-			while (curStones > 0) {
-				index = (index + 1) % (2 * len - 1);
-				// else place a stone into next field
-				curStones--; //
-				// now actually place it
-				if (index < len) {
-					player[index]++;
-				} else {
-					enemy[index % len]++;
-				}
-			}
-			if (index < len) {
-				/*
-				 * I ended up on my side => Therefore there are 2 special cases
-				 * 
-				 * a) I ended up in an prev. empty field (! not my freaking store)
-				 * b) Am I next due to ending up in
-				 */
-				if (index == len - 1) { // b) => I am at my store
-
-					newState.player_max = this.player_max;
-					return newState;
-				} else if (player[index] == 1 && enemy[enemy.length - 2 - index] > 0) {// a)
-					// code reused
-					int enemyStones = enemy[enemy.length - 2 - index];
-					enemy[enemy.length - 2 - index] = 0;
-					player[index] = 0;
-					player[player.length - 1] += enemyStones + 1;
-				}
-			}
-			newState.player_max = !this.player_max;
-			return newState;
-			// Karols Vorschlag ENDE
-			// =====================================================================================
-
-			// Max:
-			/*
-			 * for (int i = house + 1; i < player.length; i++) {
-			 * if (curStones > 0) {
-			 * player[i]++;
-			 * curStones--;
-			 * // Stein kann in einem leeren Feld landen und ich bekomme alle Gegnerischen
-			 * // Steine
-			 * // letzeter Stein + nicht im Kalah + davor leeres Feld
-			 * if ((curStones == 0) && (i != player.length - 1) && (player[i] == 1)) {
-			 * int enemyStones = enemy[enemy.length - 2 - i];
-			 * enemy[enemy.length - 2 - i] = 0;
-			 * player[i] = 0;
-			 * player[player.length - 1] += enemyStones + 1;
-			 * } else if ((curStones == 0) && (i == player.length - 1)) {
-			 * move.addAll(newState.getExtensions());
-			 * }
-			 * }
-			 * }
-			 * while (curStones > 0) {
-			 * for (int i = enemy.length - 2; i >= 0; i--) {
-			 * if (curStones > 0) {
-			 * enemy[i]++;
-			 * curStones--;
-			 * }
-			 * }
-			 * if (curStones > 0) {
-			 * enemy[newState.min.length - 1]++;
-			 * curStones--;
-			 * }
-			 * for (int i = 0; i < player.length; i++) {
-			 * if (curStones > 0) {
-			 * player[i]++;
-			 * curStones--;
-			 * if ((curStones == 0) && (i != player.length - 1) && (player[i] == 1)) {
-			 * int enemyStones = enemy[enemy.length - 2 - i];
-			 * enemy[enemy.length - 2 - i] = 0;
-			 * player[i] = 0;
-			 * player[player.length - 1] += enemyStones + 1;
-			 * } else if ((curStones == 0) && (i == player.length - 1)) {
-			 * move.addAll(newState.getExtensions());
-			 * }
-			 * }
-			 * }
-			 * 
-			 * }
-			 * move.add(newState);
-			 * return move;
-			 */
-		}
-
-		// // Is a move possible with this house?
-		// private boolean possibleMove(int house, State state) {
-		//
-		// return false;
-		// }
-
-		/*
-		 * TODO: remember Alles sich zu merken, was einmal berechnet wurde, ist ein zu
-		 * großer Overhead. Angenommen wir haben den fertig berechneten Baum und haben
-		 * die jeweiligen Alpha (und Beta) werte für jeden Knoten => Merke dir zunächst
-		 * 2 Ebenen Tief ausgehend vom Startknoten => Suche dir deinen besten aufgrund
-		 * Berechnungen aus => merke die die Erweiterungen von jenem => warte auf den
-		 * Zug des Gegners. => Matche was Gegner getan hat => Suche kann nun begonnen
-		 * werden mit Alpha vorgerechnet => Mehr Teilbäume abschneiden da sie nicht
-		 * schlechter als mein altes ergebnis sind (in der Regel variert die Güte eines
-		 * Knoten nicht allzustark von dem seinem Teilbaum => altes Alpha ist relativ
-		 * gut als untere Schranke für die neue Suche). => Dies kann wahrscheinlich in
-		 * wenigen Situationen problematisch werden, falls heuristik schlecht ist ^^"
-		 *
-		 */
-
-		private void print() {
-			System.out.println("State " + player_max);
-			System.out.println("Max:" + Arrays.toString(max));
-			System.out.println("Min:" + Arrays.toString(min));
-		}
-	}
-
-	private void test_getExtensions_skip_enemyStore() {
-		System.out.println("====================Test ===================");
-		State a = new State(mb);
-		int[] ma = { 0, 5, 0, 2 };
-		int[] mi = { 0, 5, 5, 1 };
-		a.max = ma;
-		a.min = mi;
-		a.player_max = false;
-		a.print();
-		System.out.println();
-		a.move(2).print();
-		System.out.println("====================Test ===================");
-	}
-
-	private void test_search2() {
-		System.out.println("====================Test ===================");
-		int[] ma = { 6, 6, 6, 6, 6, 6, 0 };
-		int[] mi = { 6, 6, 6, 6, 6, 6, 0 };
-		MyBoard mb = new MyBoard(ma, mi);
-		System.out.println(mb.search());
-		System.out.println("====================Test ===================");
-	}
-
-	private void test_search() {
-		System.out.println("====================Test ===================");
-		int[] ma = { 1, 0, 9, 9, 8, 8, 2 };
-		int[] mi = { 1, 0, 8, 8, 8, 8, 2 };
-		MyBoard mb = new MyBoard(ma, mi);
-		System.out.println(mb.search());
-		System.out.println("====================Test ===================");
-	}
+//	private class State {
+//		// TODO: refactor max, min to player and enemy
+//		// Ein Spieler
+//		private int[]		max;
+//		private int[]		min;
+//		private boolean		isFinal		= false;	// ob state schon zu Ende ist
+//		private int			ergebnis	= 2;		// -1 Min gewinnt, 0 Draw, 1 Max gewinnt, 2 sie spielen noch
+//		private final int	MAX_V;
+//		private final int	DRAWSTONES;
+//		// player_max == true => its max's turn
+//		// player_max == false => its mins turn
+//		private boolean		player_max;
+//		private int			len;
+//		int					prev_move	= -1;		// 1,2,... len
+//													// how to get there
+//													// -1 if starting state
+////
+//		private State (MyBoard b) {
+//			MAX_V = b.MAX_V; // TODO: hier waere es vll sinnvoller, nicht fuer jeden State extra die ganzen
+//								// Variablen
+//								// anzulegen sondern einfach das Board auch in State als Attribut speichern
+//
+//			DRAWSTONES = b.DRAWSTONES;
+//			len = b.max.length;
+//
+//			max = Arrays.copyOf(b.max, len);
+//			min = Arrays.copyOf(b.min, len);
+//
+//			if (max[len - 1] >= DRAWSTONES) { // berechnet isFinal und Ergebnis "moeglichst effizient"
+//				if (max[len - 1] == DRAWSTONES) {
+//					if (min[len - 1] == DRAWSTONES) {
+//						isFinal = true;
+//						ergebnis = 0;
+//					}
+//				} else {
+//					isFinal = true;
+//					ergebnis = 1;
+//				}
+//			} else if (min[len - 1] > DRAWSTONES) {
+//				isFinal = true;
+//				ergebnis = -1;
+//			}
+//		}
+//
+//		private State (State s) {
+//			DRAWSTONES = s.DRAWSTONES;
+//			MAX_V = s.MAX_V;
+//			isFinal = s.isFinal;
+//			ergebnis = s.ergebnis;
+//			len = s.max.length;
+//			max = Arrays.copyOf(s.max, len);
+//			min = Arrays.copyOf(s.min, len);
+//		}
+//
+//		private State (State s, int prev) {
+//			this(s);
+//			prev_move = prev;
+//		}
+//
+//		// zur Kalibrierung der Heuristik
+//		int	maxHeu	= 1000;
+//		int	minHeu	= -maxHeu;
+//
+//		/*
+//		 * TODO: eval => heuristik look up Board.max_V .min_V draw_V
+//		 */
+//		private int eval() { // wird noch optimiert, nur zum Testen bzgl Gewichtungen
+//			if (isFinal) {
+//				return ergebnis * MAX_V;
+//			}
+//			int[] weights = { 1, 1, 1, 1, 1, 1, 1 };
+//			return weights[0] * h0() + weights[1] * h1() + weights[2] * h2() + weights[3] * h3() + weights[4] * h4() + weights[5] * h5() + weights[6] * h6();
+//		}
+//
+//		private int h0() {
+//			return 0;
+//		}
+//
+//		private int h1() {
+//			return 0;
+//		}
+//
+//		private int h2() {
+//			return 0;
+//		}
+//
+//		private int h3() {
+//			return 0;
+//		}
+//
+//		private int h4() {
+//			return 0;
+//		}
+//
+//		private int h5() {
+//			return 0;
+//		}
+//
+//		private int h6() { // differenz in Punkten
+//			return (max[len - 1] - min[len - 1]);
+//		}
+//
+//		// TODO: make it a PrioQueue => we need a fast and easy eval for this (faster
+//		// then the one for our leaves)
+//		private Queue<State> getExtensions() {
+//			int[] player;
+//			if (player_max) {
+//				player = this.max;
+//			} else {
+//				player = this.min;
+//			}
+//		
+//			Queue<State> children = new LinkedList<State>();
+//			for (int i = 0; i < len - 1; i++) {
+//				if (player[i] != 0) {
+//					children.add(move(i));
+//				}
+//			}
+//			return children;
+//
+//		}
+//
+//		// Makes a move and returns the resulting State
+//		private State move(int house) {
+//			State newState = new State(this, house);
+//			int[] player;
+//			int[] enemy;
+//			if (this.player_max) {
+//				player = newState.max;
+//				enemy = newState.min;
+//			} else {
+//				player = newState.min;
+//				enemy = newState.max;
+//			}
+//
+//			int curStones = player[house];
+//			player[house] = 0;
+//			int index = house;
+//			while (curStones > 0) {
+//				index = (index + 1) % (2 * len - 1);
+//				// else place a stone into next field
+//				curStones--; //
+//				// now actually place it
+//				if (index < len) {
+//					player[index]++;
+//				} else {
+//					enemy[index % len]++;
+//				}
+//			}
+//			if (index < len) {
+//				/*
+//				 * I ended up on my side => Therefore there are 2 special cases
+//				 * 
+//				 * a) I ended up in an prev. empty field (! not my freaking store)
+//				 * b) Am I next due to ending up in
+//				 */
+//				if (index == len - 1) { // b) => I am at my store
+//
+//					newState.player_max = this.player_max;
+//					return newState;
+//				} else if (player[index] == 1 && enemy[enemy.length - 2 - index] > 0) {// a)
+//					// code reused
+//					int enemyStones = enemy[enemy.length - 2 - index];
+//					enemy[enemy.length - 2 - index] = 0;
+//					player[index] = 0;
+//					player[player.length - 1] += enemyStones + 1;
+//				}
+//			}
+//			newState.player_max = !this.player_max;
+//			return newState;
+//		}
+//
+//		private void print() {
+//			System.out.println("State " + player_max);
+//			System.out.println("Max:" + Arrays.toString(max));
+//			System.out.println("Min:" + Arrays.toString(min));
+//		}
+//	}
 }
