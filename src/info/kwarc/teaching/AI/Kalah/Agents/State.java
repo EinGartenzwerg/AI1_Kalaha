@@ -2,10 +2,10 @@ package info.kwarc.teaching.AI.Kalah.Agents;
 
 import java.util.Arrays;
 import java.util.LinkedList;
-import java.util.Queue;
-;
+import java.util.PriorityQueue;
+import java.util.Queue;;
 
-public class State implements Comparable<State>{
+public class State implements Comparable<State> {
 	// TODO: refactor max, min to player and enemy
 	// Ein Spieler
 	private int[]	max;
@@ -16,10 +16,10 @@ public class State implements Comparable<State>{
 	// player_max == false => its mins turn
 	private boolean	currentPlayer_is_max;
 	private int		len;
-	private int				prev_move	= -1;		// 1,2,... len
-											// how to get there
-											// -1 if starting state
-
+	private boolean	prev_player;
+	private int		prev_move	= -1;		// 1,2,... len
+	// how to get there
+	// -1 if starting state
 
 	public State (int[] max, int[] min, int drawseeds) {
 		len = max.length;
@@ -34,6 +34,7 @@ public class State implements Comparable<State>{
 		len = s.max.length;
 		max = Arrays.copyOf(s.max, len);
 		min = Arrays.copyOf(s.min, len);
+		prev_player = s.currentPlayer_is_max;
 	}
 
 	public State (State s, int prev) {
@@ -50,12 +51,13 @@ public class State implements Comparable<State>{
 		} else {
 			player = this.min;
 		}
-		Queue<State> children = new LinkedList<State>();
+		Queue<State> children = new PriorityQueue<State>();
 		for (int i = 0; i < len - 1; i++) {
 			if (player[i] != 0) {
 				children.add(move(i));
 			}
 		}
+		// System.out.println("\n " + Arrays.toString(children.toArray()) + "\n\n\n");
 		return children;
 
 	}
@@ -113,19 +115,23 @@ public class State implements Comparable<State>{
 	}
 
 	public void print() {
-		System.out.println("State " + currentPlayer_is_max);
+		System.out.println("State " + currentPlayer_is_max + "		Papa: " + prev_move);
 		System.out.println("Max:" + Arrays.toString(max));
 		System.out.println("Min:" + Arrays.toString(min));
 	}
 
+	@Override
+	public int compareTo(State o) { // TODO: make this a usefull heuristik
+		int theirStore = o.getStore(prev_player);
+		int myStore = getStore(prev_player);
+		return myStore - theirStore;
+	}
 
 	@Override
-	public int compareTo(State o) { //TODO: make this a usefull heuristik
-		int theirStore = o.getMyStore();
-		int myStore = getMyStore();
-		return myStore-theirStore;
+	public String toString() { // TODO: make this a usefull heuristik
+		return "" + getMyStore();
 	}
-	
+
 	// ====================================================================================================================================
 	// getter and setter
 	public boolean isFinal() {
@@ -153,8 +159,8 @@ public class State implements Comparable<State>{
 			ergebnis = -1;
 		}
 	}
-	
-	public int spielStand(){
+
+	public int spielStand() {
 		return spielStand();
 	}
 
@@ -181,16 +187,20 @@ public class State implements Comparable<State>{
 	public void setCurrentPlayer_is_max(boolean b) {
 		currentPlayer_is_max = b;
 	}
-	
+
 	public int getValue() {
 		return Heuristik.evalState(this);
 	}
-	
+
 	public int getPapa() {
 		return prev_move;
 	}
-	
+
+	public int getStore(boolean maxing) {
+		return maxing ? max[len - 1] : min[len - 1];
+	}
+
 	public int getMyStore() {
-		return currentPlayer_is_max? max[len-1] : min[len-1];
+		return currentPlayer_is_max ? max[len - 1] : min[len - 1];
 	}
 }

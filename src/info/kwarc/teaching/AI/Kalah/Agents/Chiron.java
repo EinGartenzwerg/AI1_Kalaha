@@ -1,5 +1,7 @@
 package info.kwarc.teaching.AI.Kalah.Agents;
 
+import java.util.Queue;
+
 import info.kwarc.teaching.AI.Kalah.Board;
 
 public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
@@ -15,7 +17,7 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 	@Override
 	public void init(Board board, boolean playerOne) {
 		b = board;
-		mb = new MyBoard(b,playerOne);
+		mb = new MyBoard(b, playerOne);
 		this.playerOne = playerOne;
 		// TODO: start thinking
 	}
@@ -23,13 +25,58 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 	@Override
 	public int move() {
 		mb.update();
-		return mb.search(12);
+		int re = mb.search(10);
+		return re;
 	}
 
 	@Override
 	public Iterable<String> students() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	private void testPrioQueue() {
+		testPrioQueue_1();
+		System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+		testPrioQueue_2();
+	}
+
+	private void testPrioQueue_1() {
+		int[] min = { 3, 1, 2, 0 };
+		int[] max = { 0, 1, 0, 0 };
+		State s = new State(max, min, 9);
+		boolean t = false;
+		s.setCurrentPlayer_is_max(t);
+		System.out.println("====================================>>>>>>>>>");
+		s.print();
+		System.out.println("~~~~~~~~~~");
+		Queue<State> children = s.getExtensions();
+		for (State child : children) {
+			System.out.println("									Value: " + child.getStore(t));
+			child.print();
+
+		}
+		System.out.println("====================================<<<<<<<<<");
+
+	}
+
+	private void testPrioQueue_2() {
+		int[] min = { 3, 1, 2, 0 };
+		int[] max = { 3, 1, 0, 0 };
+		boolean t = true;
+		State s = new State(max, min, 9);
+		s.setCurrentPlayer_is_max(t);
+		System.out.println("====================================>>>>>>>>>");
+		s.print();
+		System.out.println("~~~~~~~~~~");
+		Queue<State> children = s.getExtensions();
+		for (State child : children) {
+			System.out.println("									Value: " + child.getStore(t));
+			child.print();
+
+		}
+		System.out.println("====================================<<<<<<<<<");
+
 	}
 
 }
