@@ -121,12 +121,10 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 			// System.out.println("------------------------------------");
 			int[] re = new int[2];
 			re[0] = next.player_max ? MIN_V : MAX_V;
-			re[1] = -3;
-
+			re[1] = -42;
 			if (depth == 0) { // Base case
 				re[0] = next.eval();
 				// System.out.println("===========> " + re[0]);
-				re[1] = -33;
 				return re;
 			}
 
@@ -290,7 +288,7 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 			Queue<State> children = new LinkedList<State>();
 			for (int i = 0; i < len - 1; i++) {
 				if (player[i] != 0) {
-					children.addAll(move(i));
+					children.add(move(i));
 				}
 			}
 			// System.out.println("====================End ===================");
@@ -299,10 +297,8 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 		}
 
 		// Makes a move and returns the resulting State
-		private Queue<State> move(int house) {
+		private State move(int house) {
 			State newState = new State(this, house);
-			// newState.player_max = !this.player_max; // TODO: Will ich das so fr"uh haben => ich k"onnte ja wieder am
-			// zug sein (?)
 			int[] player;
 			int[] enemy;
 			if (this.player_max) {
@@ -341,7 +337,8 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 					// System.out.println("Moved i: " + index + " And i get to play again");
 					// newState.print();
 					// System.out.println("---------------------->");
-					return newState.getExtensions();
+					newState.player_max = this.player_max;
+					return newState;
 				} else if (player[index] == 1 && enemy[enemy.length - 2 - index] > 0) {// a)
 					// System.out.println("Wierd suff ?");
 					// code reused
@@ -351,10 +348,8 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 					player[player.length - 1] += enemyStones + 1;
 				}
 			}
-			Queue<State> move = new LinkedList<State>();
 			newState.player_max = !this.player_max;
-			move.add(newState);
-			return move;
+			return newState;
 
 			/*
 			 * State false
@@ -460,9 +455,7 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 		a.player_max = false;
 		a.print();
 		System.out.println();
-		for (State s : a.move(2)) {
-			s.print();
-		}
+		a.move(2).print();
 		System.out.println("====================Test ===================");
 	}
 
