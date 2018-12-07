@@ -38,9 +38,9 @@ public class MyBoard {
 	// update: uses this.board => init werte vom board
 	public void update() {
 		ArrayList<Integer> in_player = Converter.getMyHouses(board, playerOne);
-		ArrayList<Integer> in_enemy = Converter.getMyHouses(board, playerOne);
+		ArrayList<Integer> in_enemy = Converter.getEnemyHouses(board, playerOne);
 		in_player.add(Converter.getMyStoreSeeds(board, playerOne));
-		in_enemy.add(Converter.getMyStoreSeeds(board, playerOne));
+		in_enemy.add(Converter.getEnemyStoreSeeds(board, playerOne));
 		int n = in_player.size();
 		player = new int[n];
 		enemy = new int[n];

@@ -18,7 +18,8 @@ public class AgentAction {
 		tAgent.doInit = false;
 		Thread t = new Thread(tAgent);
 		t.start();
-
+		//TODO: DEL  ITS FOR DEBUGGING
+		//timelimitInMs = 600_000L;
 		Instant before = Instant.now();
 		while (true) {
 			Instant after = Instant.now();
