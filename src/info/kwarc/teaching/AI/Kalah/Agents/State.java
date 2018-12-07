@@ -5,7 +5,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 ;
 
-public class State {
+public class State implements Comparable<State>{
 	// TODO: refactor max, min to player and enemy
 	// Ein Spieler
 	private int[]	max;
@@ -16,7 +16,7 @@ public class State {
 	// player_max == false => its mins turn
 	private boolean	currentPlayer_is_max;
 	private int		len;
-	int				prev_move	= -1;		// 1,2,... len
+	private int				prev_move	= -1;		// 1,2,... len
 											// how to get there
 											// -1 if starting state
 
@@ -118,6 +118,15 @@ public class State {
 		System.out.println("Min:" + Arrays.toString(min));
 	}
 
+
+	@Override
+	public int compareTo(State o) { //TODO: make this a usefull heuristik
+		int theirStore = o.getMyStore();
+		int myStore = getMyStore();
+		return myStore-theirStore;
+	}
+	
+	// ====================================================================================================================================
 	// getter and setter
 	public boolean isFinal() {
 		return isFinal;
@@ -175,5 +184,13 @@ public class State {
 	
 	public int getValue() {
 		return Heuristik.evalState(this);
+	}
+	
+	public int getPapa() {
+		return prev_move;
+	}
+	
+	public int getMyStore() {
+		return currentPlayer_is_max? max[len-1] : min[len-1];
 	}
 }

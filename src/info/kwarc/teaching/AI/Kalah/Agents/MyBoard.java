@@ -58,7 +58,8 @@ public class MyBoard {
 	public int search(int d) {
 		int[] re = deaper(getState(), d, MIN_V, MAX_V);
 		re[1]++;// +1 da scala mit 1 startet anstatt mit 0 -.-
-//		System.out.println("[AI_THINKS]:		Depth: " + d + "	Move " + re[1] + "		Value " + re[0]);
+		// System.out.println("[AI_THINKS]: Depth: " + d + " Move " + re[1] + " Value " + re[0]);
+		System.out.println("\n 												[AI_THINKS]:		Depth: " + d + "	Move " + re[1] + "		Value " + re[0]);
 		return re[1];
 	}
 
@@ -68,8 +69,9 @@ public class MyBoard {
 	// TODO: parallelisieren
 	// TODO: endrekusiviere
 	private int[] deaper(State next, int depth, int alpha, int beta) {
-//		System.out.println("[AI_DEEP]		(d,a,b): (" + depth + "		" + alpha + "		" + beta + ")" + "		Turn of max: " + next.getCurrentPlayer_is_max() + "	histo " + next.prev_move
-//				+ "		Max: " + Arrays.toString(next.getMax()) + "		Min: " + Arrays.toString(next.getMin()));
+		// System.out.println("[AI_DEEP] (d,a,b): (" + depth + " " + alpha + " " + beta + ")" + " Turn of max: " +
+		// next.getCurrentPlayer_is_max() + " histo " + next.prev_move
+		// + " Max: " + Arrays.toString(next.getMax()) + " Min: " + Arrays.toString(next.getMin()));
 		boolean current_player_max = next.getCurrentPlayer_is_max();
 		int[] re = new int[2];
 		re[0] = current_player_max ? MIN_V : MAX_V;
@@ -86,7 +88,7 @@ public class MyBoard {
 			if (current_player_max) { // I am Max
 				if (re[0] <= result[0]) {
 					re[0] = result[0];
-					re[1] = next_child.prev_move;
+					re[1] = next_child.getPapa();
 				}
 				if (re[0] > beta) {
 					return re;
@@ -97,7 +99,7 @@ public class MyBoard {
 			} else { // I am Min
 				if (re[0] >= result[0]) {
 					re[0] = result[0];
-					re[1] = next_child.prev_move;
+					re[1] = next_child.getPapa();
 				}
 				if (re[0] < alpha) {
 					return re;
@@ -110,4 +112,44 @@ public class MyBoard {
 		}
 		return re;
 	}
+
+	// Wikipedia algo ---- aber er funktioniert nicht xD
+	// [0] == value
+	// [1] == how to get to me
+	// private int[] deaper(State next, int depth, int alpha, int beta) {
+	// System.out.println("[AI_DEEP] (d,a,b): (" + depth + " " + alpha + " " + beta + ")" + " Turn of max: " +
+	// next.getCurrentPlayer_is_max() + " histo " + next .getPapa() + " Max: "
+	// + Arrays.toString(next.getMax()) + " Min: " + Arrays.toString(next.getMin()));
+	//
+	// int[] re = new int[2];
+	// if (depth == 0 || next.isFinal()) {
+	// re[0] = next.getValue();
+	// re[1] = next.getPapa();
+	// return re;
+	// }
+	// boolean maximizing = next.getCurrentPlayer_is_max();
+	// int value = maximizing ? MIN_V : MAX_V;
+	// Queue<State> children = next.getExtensions();
+	// int[] c_result;
+	// f:
+	// for (State child : children) {
+	// c_result = deaper(child, depth - 1, alpha, beta);
+	// if (maximizing) {
+	// if (c_result[0] > re[0]) {
+	// re[0] = c_result[0];
+	// re[1] = c_result[1];
+	// }
+	// alpha = re[0] > alpha ? re[0] : alpha;
+	// if (alpha >= beta) break f;
+	// } else {
+	// if (c_result[0] < re[0]) {
+	// re[0] = c_result[0];
+	// re[1] = c_result[1];
+	// }
+	// beta = re[0] < beta ? re[0] : beta;
+	// if (alpha >= beta) break f;
+	// }
+	// }
+	// return re;
+	// }
 }

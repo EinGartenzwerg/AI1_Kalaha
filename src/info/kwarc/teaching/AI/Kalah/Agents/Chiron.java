@@ -23,7 +23,7 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 	@Override
 	public int move() {
 		mb.update();
-		return mb.search(10);
+		return mb.search(12);
 	}
 
 	@Override
