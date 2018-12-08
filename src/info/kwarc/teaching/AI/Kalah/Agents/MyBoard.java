@@ -52,16 +52,12 @@ public class MyBoard {
 	}
 
 	public State getState() {
-		return new State(player, enemy, DRAWSTONES,true);
+		return new State(player, enemy, DRAWSTONES, true);
 	}
 
 	// start einfache suche
-	public int search(int d) {
-		int[] re = deaper(getState(), d, MIN_V, MAX_V);
-		re[1]++;// +1 da scala mit 1 startet anstatt mit 0 -.-
-		// System.out.println("[AI_THINKS]: Depth: " + d + " Move " + re[1] + " Value " + re[0]);
-		System.out.println("\n 												[AI_THINKS]:		Depth: " + d + "	Move " + re[1] + "		Value " + re[0]);
-		return re[1];
+	public int[] search(int d) {
+		return deaper(getState(), d, MIN_V, MAX_V);
 	}
 
 	// recusiv deepening

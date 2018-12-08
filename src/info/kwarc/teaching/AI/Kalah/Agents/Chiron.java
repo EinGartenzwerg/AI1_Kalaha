@@ -1,6 +1,10 @@
 package info.kwarc.teaching.AI.Kalah.Agents;
 
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.omg.PortableServer.ID_ASSIGNMENT_POLICY_ID;
 
 import info.kwarc.teaching.AI.Kalah.Board;
 
@@ -23,10 +27,10 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 	@Override
 	public int move() {
 		mb.update();
-		int re = mb.search(10);
+		
 		return re;
-		//debugging();
-		//return -3;
+		// debugging();
+		// return -3;
 	}
 
 	@Override
@@ -35,60 +39,37 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 		return null;
 	}
 
-	private void testPrioQueue() {
-		testPrioQueue_1();
-		System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-		testPrioQueue_2();
-	}
 
-	private void testPrioQueue_1() {
-		int[] min = { 3, 1, 2, 0 };
-		int[] max = { 0, 1, 0, 0 };
-		State s = new State(max, min, 9);
-		boolean t = false;
-		s.setCurrentPlayer_is_max(t);
-		System.out.println("====================================>>>>>>>>>");
-		s.print();
-		System.out.println("~~~~~~~~~~");
-		Queue<State> children = s.getExtensions();
-		for (State child : children) {
-			System.out.println("									Value: " + child.getStore(t));
-			child.print();
+	private class SearchThread extends Thread {
+		private MyBoard			mb;
+		private AtomicInteger	bestMove;
+		private AtomicBoolean	poisionPill;
+		private int				index;
 
+		public SearchThread (MyBoard b) {
+			mb = b;
+			bestMove = new AtomicInteger();
+			poisionPill = new AtomicBoolean();
+			poisionPill.set(true);
+			index = 0;
 		}
-		System.out.println("====================================<<<<<<<<<");
 
-	}
-
-	private void testPrioQueue_2() {
-		int[] min = { 3, 1, 2, 0 };
-		int[] max = { 3, 1, 0, 0 };
-		boolean t = true;
-		State s = new State(max, min, 9);
-		s.setCurrentPlayer_is_max(t);
-		System.out.println("====================================>>>>>>>>>");
-		s.print();
-		System.out.println("~~~~~~~~~~");
-		Queue<State> children = s.getExtensions();
-		for (State child : children) {
-			System.out.println("									Value: " + child.getStore(t));
-			child.print();
-
+		@Override
+		public void run() {
+			int[] re;
+			while (!poisionPill.get()) {
+				index++;
+				re = mb.search(index);
+				bestMove.set(re[1] + 1);// +1 da scala mit 1 startet anstatt mit 0 -.-
+				// System.out.println("[AI_THINKS]: Depth: " + d + " Move " + re[1] + " Value " + re[0]);
+				if (!poisionPill.get()) {
+					System.out.println("\n 												[AI_THINKS]:		Depth: " + index + "	Move " + re[1] + "		Value " + re[0]);
+				}
+			}
 		}
-		System.out.println("====================================<<<<<<<<<");
 
+		public void kill() {
+			poisionPill.set(true);
+		}
 	}
-
-	private void debugging() {
-		int[] min = { 2, 0, 17, 0, 14, 7, 5 };
-		int[] max = { 3, 2, 0, 0, 15, 0, 7 };
-		System.out.println("====================================>>>>>>>>>");
-		MyBoard b = new MyBoard(max, min);
-		b.getState().print();
-		System.out.println(b.search(10));
-
-		System.out.println("====================================<<<<<<<<<");
-
-	}
-
 }
