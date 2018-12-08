@@ -1,16 +1,16 @@
 package info.kwarc.teaching.AI.Kalah.Agents;
 
-import java.util.Queue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.omg.PortableServer.ID_ASSIGNMENT_POLICY_ID;
-
 import info.kwarc.teaching.AI.Kalah.Board;
 
 public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
-	private Board	b;
-	private MyBoard	mb;
+	private final long		move_time	= 4900;
+
+	private Board			b;
+	private MyBoard			mb;
+	private AtomicInteger	bestMove	= new AtomicInteger();
+	private AtomicBoolean	poisionPill	= new AtomicBoolean();
 
 	@Override
 	public String name() {
@@ -26,11 +26,20 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 
 	@Override
 	public int move() {
+		long time_start = System.currentTimeMillis();
 		mb.update();
-		
-		return re;
-		// debugging();
-		// return -3;
+		SearchThread t = new SearchThread(mb);
+		t.start();
+		long delta = System.currentTimeMillis() - time_start;
+		while (delta < move_time) {
+			try {
+				Thread.sleep(50);
+			} catch (Exception e) {}
+			delta = System.currentTimeMillis() - time_start;
+		}
+		t.kill();
+		return bestMove.get();
+
 	}
 
 	@Override
@@ -39,18 +48,13 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 		return null;
 	}
 
-
 	private class SearchThread extends Thread {
-		private MyBoard			mb;
-		private AtomicInteger	bestMove;
-		private AtomicBoolean	poisionPill;
-		private int				index;
+		private MyBoard	mb;
+		private int		index;
 
 		public SearchThread (MyBoard b) {
 			mb = b;
-			bestMove = new AtomicInteger();
-			poisionPill = new AtomicBoolean();
-			poisionPill.set(true);
+			poisionPill.set(false);
 			index = 0;
 		}
 
@@ -70,6 +74,10 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 
 		public void kill() {
 			poisionPill.set(true);
+		}
+
+		public int getDepth() {
+			return index;
 		}
 	}
 }
