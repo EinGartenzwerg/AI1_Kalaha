@@ -15,11 +15,15 @@ object Test {
     //new Game(new HumanPlayer("Hans"),new RandomPlayer("Hurtz"),int + Terminal)(12,12).play
     //new Game(new HumanPlayer("Hans"),new RandomPlayer("Hurtz"),int + Terminal)(12,12).play
     //new Game(new HumanPlayer("Hans"), new Chiron(), int + Terminal)(6, 6).play
-//    new Game(new RandomPlayer("Hans"), new Chiron(), int + Terminal)(6, 6).play
-//    new Game(new Chiron(),new RandomPlayer("Hans"), int + Terminal)(6, 6).play
+    //    new Game(new RandomPlayer("Hans"), new Chiron(), int + Terminal)(6, 6).play
+    //    new Game(new Chiron(),new RandomPlayer("Hans"), int + Terminal)(6, 6).play
     //new Game(new Chiron(),new HumanPlayer("Hans"), int + Terminal)(6, 6).play
-//    new Game(new RandomPlayer("Hans"), new Chiron(), int + Terminal)(12, 12).play
-    
-    new Game( new Chiron(),new RandomPlayer("Hans"), int + Terminal)(12, 12).play
+//        new Game(new RandomPlayer("Hans"), new Chiron(), int + Terminal)(12, 12).play
+
+        new Game(new Chiron(), new RandomPlayer("Hans"), int + Terminal)(6, 6).play
+//    new Game(new RandomPlayer("Hans"), new Chiron(), int + Terminal)(6, 6).play
+    //    new Game(new Chiron(),new RandomPlayer("Hans"),Terminal)(6, 6).play
+//        new Game(new RandomPlayer("Hans"),new Chiron(),Terminal)(6, 6).play
+//      new Game(new HumanPlayer("Hans"), new Chiron(), int + Terminal)(6, 6).play
   }
 }
