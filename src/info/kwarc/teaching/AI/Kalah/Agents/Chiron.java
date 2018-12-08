@@ -60,16 +60,17 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 
 		@Override
 		public void run() {
-			int[] re;
+			int[] re = new int[2];
 			while (!poisionPill.get()) {
 				index++;
 				re = mb.search(index);
 				bestMove.set(re[1] + 1);// +1 da scala mit 1 startet anstatt mit 0 -.-
 				// System.out.println("[AI_THINKS]: Depth: " + d + " Move " + re[1] + " Value " + re[0]);
-				if (!poisionPill.get()) {
-					System.out.println("\n 												[AI_THINKS]:		Depth: " + index + "	Move " + re[1] + "		Value " + re[0]);
-				}
+				// if (!poisionPill.get()) {
+				// }
 			}
+			System.out.println("\n 												[AI_THINKS]:		Depth: " + index + "	Move " + re[1] + "		Value " + re[0]);
+
 		}
 
 		public void kill() {
