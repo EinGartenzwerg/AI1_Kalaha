@@ -69,7 +69,7 @@ public class Chiron extends info.kwarc.teaching.AI.Kalah.Agents.Agent {
 				// if (!poisionPill.get()) {
 				// }
 			}
-			System.out.println("\n 												[AI_THINKS]:		Depth: " + index + "	Move " + re[1] + "		Value " + re[0]);
+		//	System.out.println("\n 												[AI_THINKS]:		Depth: " + index + "	Move " + re[1] + "		Value " + re[0]);
 
 		}
 
